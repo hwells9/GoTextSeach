@@ -1,0 +1,14 @@
+volumes:
+  data:
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: go-text-search-postgres
+    environment:
+      - POSTGRES_PASSWORD=postgrespw
+    ports:
+      - 5432:5432
+    volumes:
+      - data:/var/lib/postgresql
+      - ./sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
