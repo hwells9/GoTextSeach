@@ -3,10 +3,10 @@ package utils
 import (
 	"crypto/md5"
 	"encoding/hex"
-	// _ tells go that we want to import so we can use the drivers without ever referencing the library directly in code
-	_ "github.com/lib/pq"
 	"encoding/json"
 	"fmt"
+	// _ tells go that we want to import so we can use the drivers without ever referencing the library directly in code
+	_ "github.com/lib/pq"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -333,7 +333,7 @@ func populateCharactersDbEntries(seriesCharactersResponses []SeriesCharactersRes
 	return charactersDbEntries
 }
 
-func main() {
+func ExecuteMigration() {
 	// Set the location of the environment variables file
 	viper.SetConfigFile("../env-vars.env")
 
@@ -355,11 +355,11 @@ func main() {
 	// Build out the db entry structs to be stored in db
 	seriesDbEntries := populateSeriesDbEntries(seriesResponse)
 	comicsDbEntries := populateComicsDbEntries(seriesComicsResponses)
-	chractersDbEntries := populateCharactersDbEntries(seriesCharactersResponses)
+	charactersDbEntries := populateCharactersDbEntries(seriesCharactersResponses)
 
 	fmt.Println("Series to store in db: \n", seriesDbEntries)
 	fmt.Println("Comics to store in db: \n", comicsDbEntries)
-	fmt.Printf("Characters to store in db: %+v\n", chractersDbEntries)
+	fmt.Printf("Characters to store in db: %+v\n", charactersDbEntries)
 
 	// TODO Store all data in db
 	DbConnect()
