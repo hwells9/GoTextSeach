@@ -2,13 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"example/hello/utils"
+	"flag"
 	"fmt"
+	"github.com/gorilla/mux"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
-
-	"github.com/gorilla/mux"
 )
 
 type ComicBook struct {
@@ -119,9 +120,20 @@ func handleRequests() {
 }
 
 func main() {
-	ComicBooks = []ComicBook{
-		{Title: "X-Men", Year: 1970, Id: 1},
-		{Title: "Avengers", Year: 1856, Id: 2},
+	// get the executeDataMigration parameter from the cmd line
+	executeDataMigrationPtr := flag.Bool("executeDataMigration", false, "bool value")
+	flag.Parse()
+
+	if *executeDataMigrationPtr {
+		// run the export data from marvel api to db
+		utils.ExecuteMigration()
+
+	} else {
+		ComicBooks = []ComicBook{
+			{Title: "X-Men", Year: 1970, Id: 1},
+			{Title: "Avengers", Year: 1856, Id: 2},
+		}
+		handleRequests()
 	}
-	handleRequests()
+
 }
