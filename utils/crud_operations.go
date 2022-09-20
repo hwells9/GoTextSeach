@@ -1,65 +1,89 @@
 package utils
 
 import (
-	"database/sql"
 	"fmt"
+	"github.com/jmoiron/sqlx"
+	_ "github.com/jmoiron/sqlx"
+	"strconv"
 	// _ tells go that we want to import so we can use the drivers without ever referencing the library directly in code
 	_ "github.com/lib/pq"
 	"log"
 )
 
-var db *sql.DB
+// var db *sql.DB
+var db *sqlx.DB
 
 func DbConnect() {
-	const (
-		user     = "postgres"
-		password = "postgrespw"
-		host     = "127.0.0.1"
-		port     = 5432
-		dbName   = "postgres"
-	)
+	var err error
+	user := getEnvironmentVariable("DATABASE_USERNAME")
+	password := getEnvironmentVariable("DATABASE_PASSWORD")
+	host := getEnvironmentVariable("DATABASE_ADDRESS")
+	dbName := getEnvironmentVariable("DATABASE_NAME")
+	port, err := strconv.Atoi(getEnvironmentVariable("DATABASE_PORT"))
+
+	if err != nil {
+		fmt.Printf("problem")
+	}
 
 	postgresConnectionString := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbName)
-	// Get a database handle.
-	var err error
-	db, err = sql.Open("postgres", postgresConnectionString)
+
+	db, err = sqlx.Connect("postgres", postgresConnectionString)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 }
 
-func InsertRow(query string) int64 {
-	// Insert example
-	result, err := db.Exec(query)
+func insertStruct(dataStruct interface{}, query string) {
+	_, err := db.NamedExec(query, dataStruct)
 	if err != nil {
-		return 0
+		fmt.Printf("Error: %s", err)
 	}
-
-	// Get the new album's generated ID for the client.
-	affected, err := result.RowsAffected()
-	if err != nil {
-		return 0
-	}
-	return affected
 }
 
-func SelectRows(query string) []Series {
+func SelectRows(query string) []SeriesDbEntry {
 	//Select example
-	var series []Series
+	var series []SeriesDbEntry
 	rows, err := db.Query(query)
 	if err != nil {
-		return []Series{}
+		return []SeriesDbEntry{}
 	}
 
 	for rows.Next() {
-		var seriesObject Series
+		var seriesObject SeriesDbEntry
 		if err := rows.Scan(&seriesObject.Title, &seriesObject.Description, &seriesObject.Id); err != nil {
-			return []Series{}
+			return []SeriesDbEntry{}
 		}
 		series = append(series, seriesObject)
 	}
 
 	return series
+	//
+	//rows, _ := db.Query(query)
+	//defer rows.Close()
+	//
+	//cols, _ := rows.Columns()
+	//
+	//w := tabwriter.NewWriter(os.Stdout, 0, 2, 1, ' ', 0)
+	//defer w.Flush()
+	//
+	//sep := []byte("\t")
+	//newLine := []byte("\n")
+	//
+	//w.Write([]byte(strings.Join(cols, "\t") + "\n"))
+	//
+	//row := make([][]byte, len(cols))
+	//rowPtr := make([]any, len(cols))
+	//for i := range row {
+	//	rowPtr[i] = &row[i]
+	//}
+	//
+	//for rows.Next() {
+	//	_ = rows.Scan(rowPtr...)
+	//
+	//	w.Write(bytes.Join(row, sep))
+	//	w.Write(newLine)
+	//}
+
 }
