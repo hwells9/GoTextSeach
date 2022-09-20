@@ -10,7 +10,6 @@ import (
 	"log"
 )
 
-// var db *sql.DB
 var db *sqlx.DB
 
 func DbConnect() {
@@ -40,50 +39,4 @@ func insertStruct(dataStruct interface{}, query string) {
 	if err != nil {
 		fmt.Printf("Error: %s", err)
 	}
-}
-
-func SelectRows(query string) []SeriesDbEntry {
-	//Select example
-	var series []SeriesDbEntry
-	rows, err := db.Query(query)
-	if err != nil {
-		return []SeriesDbEntry{}
-	}
-
-	for rows.Next() {
-		var seriesObject SeriesDbEntry
-		if err := rows.Scan(&seriesObject.Title, &seriesObject.Description, &seriesObject.Id); err != nil {
-			return []SeriesDbEntry{}
-		}
-		series = append(series, seriesObject)
-	}
-
-	return series
-	//
-	//rows, _ := db.Query(query)
-	//defer rows.Close()
-	//
-	//cols, _ := rows.Columns()
-	//
-	//w := tabwriter.NewWriter(os.Stdout, 0, 2, 1, ' ', 0)
-	//defer w.Flush()
-	//
-	//sep := []byte("\t")
-	//newLine := []byte("\n")
-	//
-	//w.Write([]byte(strings.Join(cols, "\t") + "\n"))
-	//
-	//row := make([][]byte, len(cols))
-	//rowPtr := make([]any, len(cols))
-	//for i := range row {
-	//	rowPtr[i] = &row[i]
-	//}
-	//
-	//for rows.Next() {
-	//	_ = rows.Scan(rowPtr...)
-	//
-	//	w.Write(bytes.Join(row, sep))
-	//	w.Write(newLine)
-	//}
-
 }

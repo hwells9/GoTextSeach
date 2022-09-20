@@ -361,8 +361,6 @@ func populateDistinctCharactersDbEntries(seriesCharactersResponses []SeriesChara
 				// Add to the struct
 				distinctCharacterDbEntries = append(distinctCharacterDbEntries, c)
 			}
-
-			//distinctCharacterDbEntries = append(distinctCharacterDbEntries, c)
 		}
 	}
 
