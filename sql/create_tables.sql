@@ -23,11 +23,10 @@ CREATE TABLE IF NOT EXISTS characters (
                                            );                           
 
 CREATE TABLE IF NOT EXISTS characters_comic_books (
+                                           id              SERIAL PRIMARY KEY,
                                            character_id INT NOT NULL,
                                            comic_book_id INT NOT NULL,
                                            character_name VARCHAR (100),
-                                           comic_book_title VARCHAR (200),
-                                           PRIMARY KEY (character_id, comic_book_id),
                                            
 
     CONSTRAINT FK_character_comic_book FOREIGN KEY (character_id)
@@ -36,16 +35,15 @@ CREATE TABLE IF NOT EXISTS characters_comic_books (
     ON UPDATE CASCADE,
 
     CONSTRAINT FK_comic_book_character FOREIGN KEY (comic_book_id)
-    REFERENCES characters(id)  
+    REFERENCES comic_books(id)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 );
 CREATE TABLE IF NOT EXISTS characters_series (
+                                           id              SERIAL PRIMARY KEY,
                                            character_id INT NOT NULL,
                                            series_id INT NOT NULL,
                                            character_name VARCHAR (100),
-                                           series_title VARCHAR (200),
-                                           PRIMARY KEY (character_id, series_id),
                                              
 
     CONSTRAINT FK_character_series FOREIGN KEY (character_id)
@@ -54,7 +52,7 @@ CREATE TABLE IF NOT EXISTS characters_series (
     ON UPDATE CASCADE,
 
     CONSTRAINT FK_series_character FOREIGN KEY (series_id)
-    REFERENCES characters(id)  
+    REFERENCES series(id)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 );

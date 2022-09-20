@@ -1,18 +1,20 @@
-package main
+package utils
 
 import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"time"
+
+	// _ tells go that we want to import so we can use the drivers without ever referencing the library directly in code
+	_ "github.com/lib/pq"
+	"github.com/spf13/viper"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"strconv"
-	"time"
-
-	"github.com/spf13/viper"
 )
 
 // Global Vars set from environment variables
@@ -125,24 +127,30 @@ type ComicBook struct {
 
 // Represents the tables
 type SeriesDbEntry struct {
-	id          int
-	title       string
-	description string
+	Id          int    `db:"id"`
+	Title       string `db:"title"`
+	Description string `db:"description"`
 }
 
 type ComicBookDbEntry struct {
-	id          int
-	title       string
-	description string
-	seriesId    int
+	Id          int    `db:"id"`
+	Title       string `db:"title"`
+	Description string `db:"description"`
+	SeriesId    int    `db:"seriesId"`
 }
 
 type CharacterDbEntry struct {
-	id          int
-	name        string
-	description string
-	seriesId    int
-	comicId     int
+	Id          int    `db:"id"`
+	Name        string `db:"name"`
+	Description string `db:"description"`
+	SeriesId    int    `db:"seriesId"`
+	ComicId     int    `db:"comicId"`
+}
+
+type DistinctCharacterDbEntry struct {
+	Id          int    `db:"id"`
+	Name        string `db:"name"`
+	Description string `db:"description"`
 }
 
 // Use viper to get an environment variable
@@ -276,9 +284,9 @@ func populateSeriesDbEntries(seriesResponse SeriesResponse) []SeriesDbEntry {
 	for _, series := range seriesResponse.Data.Results {
 		var s SeriesDbEntry
 
-		s.id = series.Id
-		s.title = series.Title
-		s.description = series.Description
+		s.Id = series.Id
+		s.Title = series.Title
+		s.Description = series.Description
 
 		seriesDbEntries = append(seriesDbEntries, s)
 	}
@@ -296,10 +304,10 @@ func populateComicsDbEntries(seriesComicsResponse []SeriesComicsResponse) []Comi
 		for _, comic := range response.Data.Results {
 			var c ComicBookDbEntry
 
-			c.id = comic.Id
-			c.title = comic.Title
-			c.description = comic.Description
-			c.seriesId = seriesId
+			c.Id = comic.Id
+			c.Title = comic.Title
+			c.Description = comic.Description
+			c.SeriesId = seriesId
 
 			ComicBookDbEntries = append(ComicBookDbEntries, c)
 		}
@@ -318,11 +326,11 @@ func populateCharactersDbEntries(seriesCharactersResponses []SeriesCharactersRes
 		for _, character := range response.Data.Results {
 			var c CharacterDbEntry
 
-			c.id = character.Id
-			c.name = character.Name
-			c.description = character.Description
-			c.seriesId = seriesId
-			c.comicId = comicId
+			c.Id = character.Id
+			c.Name = character.Name
+			c.Description = character.Description
+			c.SeriesId = seriesId
+			c.ComicId = comicId
 
 			charactersDbEntries = append(charactersDbEntries, c)
 		}
@@ -331,9 +339,37 @@ func populateCharactersDbEntries(seriesCharactersResponses []SeriesCharactersRes
 	return charactersDbEntries
 }
 
-func main() {
+func populateDistinctCharactersDbEntries(seriesCharactersResponses []SeriesCharactersResponse) []DistinctCharacterDbEntry {
+	var distinctCharacterDbEntries []DistinctCharacterDbEntry
+	//distinctCharacterIds := []
+	for _, response := range seriesCharactersResponses {
+		for _, character := range response.Data.Results {
+			var c DistinctCharacterDbEntry
+
+			c.Id = character.Id
+			c.Name = character.Name
+			c.Description = character.Description
+
+			idPresent := false
+			for _, i := range distinctCharacterDbEntries {
+				if i.Id == c.Id {
+					idPresent = true
+					break
+				}
+			}
+			if idPresent == false {
+				// Add to the struct
+				distinctCharacterDbEntries = append(distinctCharacterDbEntries, c)
+			}
+		}
+	}
+
+	return distinctCharacterDbEntries
+}
+
+func ExecuteMigration() {
 	// Set the location of the environment variables file
-	viper.SetConfigFile("../env-vars.env")
+	viper.SetConfigFile("env-vars.env")
 
 	// Set globals using environment variables with viper
 	setGlobalVars()
@@ -353,12 +389,28 @@ func main() {
 	// Build out the db entry structs to be stored in db
 	seriesDbEntries := populateSeriesDbEntries(seriesResponse)
 	comicsDbEntries := populateComicsDbEntries(seriesComicsResponses)
-	chractersDbEntries := populateCharactersDbEntries(seriesCharactersResponses)
+	charactersDbEntries := populateCharactersDbEntries(seriesCharactersResponses)
+	distinctCharacterDbEntries := populateDistinctCharactersDbEntries(seriesCharactersResponses)
 
-	fmt.Println("Series to store in db: \n", seriesDbEntries)
-	fmt.Println("Comics to store in db: \n", comicsDbEntries)
-	fmt.Printf("Characters to store in db: %+v\n", chractersDbEntries)
+	DbConnect()
+	seriesInsertQuery := `INSERT INTO series(id, title, description)
+	    VALUES(:id, :title, :description)`
+	insertStruct(seriesDbEntries, seriesInsertQuery)
 
-	// TODO Store all data in db
+	comicsInsertQuery := `INSERT INTO comic_books(id, title, description, series_id)
+	     VALUES(:id, :title, :description, :seriesId)`
+	insertStruct(comicsDbEntries, comicsInsertQuery)
+
+	charactersInsertQuery := `INSERT INTO characters(id, name, description)
+	     VALUES(:id, :name, :description)`
+	insertStruct(distinctCharacterDbEntries, charactersInsertQuery)
+
+	charactersComicBooksInsertQuery := `INSERT INTO characters_comic_books(character_id, comic_book_id, character_name)
+	     VALUES(:id, :comicId, :name)`
+	insertStruct(charactersDbEntries, charactersComicBooksInsertQuery)
+
+	charactersSeriesInsertQuery := `INSERT INTO characters_series(character_id, series_id, character_name)
+	     VALUES(:id, :seriesId, :name)`
+	insertStruct(charactersDbEntries, charactersSeriesInsertQuery)
 
 }
