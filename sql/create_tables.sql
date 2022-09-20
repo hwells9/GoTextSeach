@@ -27,7 +27,6 @@ CREATE TABLE IF NOT EXISTS characters_comic_books (
                                            character_id INT NOT NULL,
                                            comic_book_id INT NOT NULL,
                                            character_name VARCHAR (100),
-                                           comic_book_title VARCHAR (200),
                                            
 
     CONSTRAINT FK_character_comic_book FOREIGN KEY (character_id)
@@ -45,7 +44,6 @@ CREATE TABLE IF NOT EXISTS characters_series (
                                            character_id INT NOT NULL,
                                            series_id INT NOT NULL,
                                            character_name VARCHAR (100),
-                                           series_title VARCHAR (200),
                                              
 
     CONSTRAINT FK_character_series FOREIGN KEY (character_id)
