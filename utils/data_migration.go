@@ -126,20 +126,22 @@ type ComicBook struct {
 	Description string `json:"description"`
 }
 
-// Represents the tables
+// Represents the Series tables
 type SeriesDbEntry struct {
 	Id          int    `db:"id"`
 	Title       string `db:"title"`
 	Description string `db:"description"`
 }
 
+// Represents Comic Book table
 type ComicBookDbEntry struct {
 	Id          int    `db:"id"`
 	Title       string `db:"title"`
 	Description string `db:"description"`
-	SeriesId    int    `db:"seriesId"`
+	SeriesId    int    `db:"series_id"`
 }
 
+// Represents Characters Table
 type CharacterDbEntry struct {
 	Id          int    `db:"id"`
 	Name        string `db:"name"`
@@ -148,6 +150,7 @@ type CharacterDbEntry struct {
 	ComicId     int    `db:"comicId"`
 }
 
+// Used to populate characters table
 type DistinctCharacterDbEntry struct {
 	Id          int    `db:"id"`
 	Name        string `db:"name"`

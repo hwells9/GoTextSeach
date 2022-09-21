@@ -2,15 +2,18 @@ package utils
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/jmoiron/sqlx"
 	_ "github.com/jmoiron/sqlx"
-	"strconv"
+
 	// _ tells go that we want to import so we can use the drivers without ever referencing the library directly in code
-	_ "github.com/lib/pq"
 	"log"
+
+	_ "github.com/lib/pq"
 )
 
-var db *sqlx.DB
+var Db *sqlx.DB
 
 func DbConnect() {
 	var err error
@@ -28,15 +31,32 @@ func DbConnect() {
 		"password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbName)
 
-	db, err = sqlx.Connect("postgres", postgresConnectionString)
+	Db, err = sqlx.Connect("postgres", postgresConnectionString)
 	if err != nil {
 		log.Fatalln(err)
 	}
 }
 
 func insertStruct(dataStruct interface{}, query string) {
-	_, err := db.NamedExec(query, dataStruct)
+	_, err := Db.NamedExec(query, dataStruct)
+
 	if err != nil {
 		fmt.Printf("Error: %s", err)
 	}
 }
+
+// func SelectStruct(structType string, query string) []interface{} {
+
+// 	switch(structType) {
+// 	case "comic":
+// 		myData := []ComicBookDbEntry{}
+// 	}
+
+// 	err := db.Select(&myData, query)
+
+// 	if err != nil {
+// 		fmt.Printf("Error: %s", err)
+// 	}
+
+// 	return myData
+// }
