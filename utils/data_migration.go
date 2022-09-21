@@ -9,12 +9,13 @@ import (
 	"time"
 
 	// _ tells go that we want to import so we can use the drivers without ever referencing the library directly in code
-	_ "github.com/lib/pq"
-	"github.com/spf13/viper"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+
+	_ "github.com/lib/pq"
+	"github.com/spf13/viper"
 )
 
 // Global Vars set from environment variables
@@ -405,12 +406,12 @@ func ExecuteMigration() {
 	     VALUES(:id, :name, :description)`
 	insertStruct(distinctCharacterDbEntries, charactersInsertQuery)
 
-	charactersComicBooksInsertQuery := `INSERT INTO characters_comic_books(character_id, comic_book_id, character_name)
-	     VALUES(:id, :comicId, :name)`
+	charactersComicBooksInsertQuery := `INSERT INTO characters_comic_books(character_id, comic_book_id)
+	     VALUES(:id, :comicId)`
 	insertStruct(charactersDbEntries, charactersComicBooksInsertQuery)
 
-	charactersSeriesInsertQuery := `INSERT INTO characters_series(character_id, series_id, character_name)
-	     VALUES(:id, :seriesId, :name)`
+	charactersSeriesInsertQuery := `INSERT INTO characters_series(character_id, series_id)
+	     VALUES(:id, :seriesId)`
 	insertStruct(charactersDbEntries, charactersSeriesInsertQuery)
 
 }
