@@ -1,4 +1,4 @@
-module example/hello
+module bench/textsearch
 
 go 1.19
 
