@@ -44,19 +44,3 @@ func insertStruct(dataStruct interface{}, query string) {
 		fmt.Printf("Error: %s", err)
 	}
 }
-
-// func SelectStruct(structType string, query string) []interface{} {
-
-// 	switch(structType) {
-// 	case "comic":
-// 		myData := []ComicBookDbEntry{}
-// 	}
-
-// 	err := db.Select(&myData, query)
-
-// 	if err != nil {
-// 		fmt.Printf("Error: %s", err)
-// 	}
-
-// 	return myData
-// }
