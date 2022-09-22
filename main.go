@@ -5,18 +5,26 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/gorilla/mux"
+	"github.com/spf13/viper"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
-
-	"github.com/gorilla/mux"
-	"github.com/spf13/viper"
+	"strings"
 )
 
 type ComicBook struct {
 	Title string
 	Year  int
 	Id    int
+}
+
+type SearchQuery struct {
+	TableName      string
+	ResultsColumns []string
+	SearchTerm     string
+	SearchColumn   string
 }
 
 func homePage(w http.ResponseWriter, r *http.Request) {
@@ -129,6 +137,81 @@ func returnCharacter(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(result)
 }
 
+func searchSeries(w http.ResponseWriter, r *http.Request) {
+	reqBody, _ := ioutil.ReadAll(r.Body)
+
+	var searchQuery SearchQuery
+
+	json.Unmarshal(reqBody, &searchQuery)
+
+	resultColumns := strings.Join(searchQuery.ResultsColumns, ",")
+	searchTerm := searchQuery.SearchTerm
+	searchColumn := searchQuery.SearchColumn
+
+	fmt.Printf("Retrieving Series with tableNames: %s, %s, %s",
+		resultColumns, searchTerm, searchColumn)
+
+	query := "SELECT $1 FROM series WHERE to_tsvector('english', $2) @@ to_tsquery('english', $3)"
+
+	result, err := utils.Db.Query(query, resultColumns, searchColumn, searchTerm)
+
+	if err != nil {
+		fmt.Printf("Error: %s", err)
+	}
+
+	json.NewEncoder(w).Encode(result)
+}
+
+func searchComicBooks(w http.ResponseWriter, r *http.Request) {
+	reqBody, _ := ioutil.ReadAll(r.Body)
+
+	var searchQuery SearchQuery
+
+	json.Unmarshal(reqBody, &searchQuery)
+
+	resultColumns := strings.Join(searchQuery.ResultsColumns, ",")
+	searchTerm := searchQuery.SearchTerm
+	searchColumn := searchQuery.SearchColumn
+
+	fmt.Printf("Retrieving Comicbooks with : %s, %s, %s",
+		resultColumns, searchTerm, searchColumn)
+
+	query := "SELECT $1 FROM comic_books WHERE to_tsvector('english', $2) @@ to_tsquery('english', $3)"
+
+	result, err := utils.Db.Query(query, resultColumns, searchColumn, searchTerm)
+
+	if err != nil {
+		fmt.Printf("Error: %s", err)
+	}
+
+	json.NewEncoder(w).Encode(result)
+}
+
+func searchCharacters(w http.ResponseWriter, r *http.Request) {
+	reqBody, _ := ioutil.ReadAll(r.Body)
+
+	var searchQuery SearchQuery
+
+	json.Unmarshal(reqBody, &searchQuery)
+
+	resultColumns := strings.Join(searchQuery.ResultsColumns, ",")
+	searchTerm := searchQuery.SearchTerm
+	searchColumn := searchQuery.SearchColumn
+
+	fmt.Printf("Retrieving Character with tableNames: %s, %s, %s",
+		resultColumns, searchTerm, searchColumn)
+
+	query := "SELECT $1 FROM characters WHERE to_tsvector('english', $2) @@ to_tsquery('english', $3)"
+
+	result, err := utils.Db.Query(query, resultColumns, searchColumn, searchTerm)
+
+	if err != nil {
+		fmt.Printf("Error: %s", err)
+	}
+
+	json.NewEncoder(w).Encode(result)
+}
+
 // func getLargestComicBookId() int {
 // 	currentId := 0
 
@@ -207,6 +290,11 @@ func handleRequests() {
 	myRouter.HandleFunc("/characters", returnCharacters).Methods("GET")
 	myRouter.HandleFunc("/characters/{id}", returnCharacter).Methods("GET")
 
+	// search endpoints
+	myRouter.HandleFunc("/searchSeries", searchSeries).Methods("GET")
+	myRouter.HandleFunc("/searchComicBooks", searchComicBooks).Methods("GET")
+	myRouter.HandleFunc("/searchCharacters", searchCharacters).Methods("GET")
+
 	// myRouter.HandleFunc("/comic-books", createComicBook).Methods("POST")
 	// myRouter.HandleFunc("/comic-books/{id}", deleteComicBook).Methods("DELETE")
 	// myRouter.HandleFunc("/comic-books/{id}", updateComicBook).Methods("PUT")
@@ -223,7 +311,6 @@ func main() {
 	if *executeDataMigrationPtr {
 		// run the export data from marvel api to db
 		utils.ExecuteMigration()
-
 	} else {
 		// ComicBooks = []ComicBook{
 		// 	{Title: "X-Men", Year: 1970, Id: 1},
