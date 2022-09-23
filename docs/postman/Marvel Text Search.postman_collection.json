@@ -33,11 +33,11 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{http}}{{home}}:{{harrysLocalPort}}/{{comic-books}}/{{comicBookId}}",
+							"raw": "{{http}}{{home}}:{{port}}/{{comic-books}}/{{comicBookId}}",
 							"host": [
 								"{{http}}{{home}}"
 							],
-							"port": "{{harrysLocalPort}}",
+							"port": "{{port}}",
 							"path": [
 								"{{comic-books}}",
 								"{{comicBookId}}"
@@ -57,11 +57,11 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{http}}{{home}}:{{harrysLocalPort}}/{{series}}",
+							"raw": "{{http}}{{home}}:{{port}}/{{series}}",
 							"host": [
 								"{{http}}{{home}}"
 							],
-							"port": "{{harrysLocalPort}}",
+							"port": "{{port}}",
 							"path": [
 								"{{series}}"
 							]
@@ -75,11 +75,11 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{http}}{{home}}:{{harrysLocalPort}}/{{series}}/{{seriesId}}",
+							"raw": "{{http}}{{home}}:{{port}}/{{series}}/{{seriesId}}",
 							"host": [
 								"{{http}}{{home}}"
 							],
-							"port": "{{harrysLocalPort}}",
+							"port": "{{port}}",
 							"path": [
 								"{{series}}",
 								"{{seriesId}}"
@@ -99,11 +99,11 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{http}}{{home}}:{{harrysLocalPort}}/{{characters}}",
+							"raw": "{{http}}{{home}}:{{port}}/{{characters}}",
 							"host": [
 								"{{http}}{{home}}"
 							],
-							"port": "{{harrysLocalPort}}",
+							"port": "{{port}}",
 							"path": [
 								"{{characters}}"
 							]
@@ -117,11 +117,11 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{http}}{{home}}:{{harrysLocalPort}}/{{characters}}/{{characterId}}",
+							"raw": "{{http}}{{home}}:{{port}}/{{characters}}/{{characterId}}",
 							"host": [
 								"{{http}}{{home}}"
 							],
-							"port": "{{harrysLocalPort}}",
+							"port": "{{port}}",
 							"path": [
 								"{{characters}}",
 								"{{characterId}}"
@@ -150,11 +150,11 @@
 							}
 						},
 						"url": {
-							"raw": "{{http}}{{home}}:{{harrysLocalPort}}/{{search}}",
+							"raw": "{{http}}{{home}}:{{port}}/{{search}}",
 							"host": [
 								"{{http}}{{home}}"
 							],
-							"port": "{{harrysLocalPort}}",
+							"port": "{{port}}",
 							"path": [
 								"{{search}}"
 							]
@@ -185,11 +185,11 @@
 							}
 						},
 						"url": {
-							"raw": "{{http}}{{home}}:{{harrysLocalPort}}/{{api}}/{{user}}/{{register}}",
+							"raw": "{{http}}{{home}}:{{port}}/{{api}}/{{user}}/{{register}}",
 							"host": [
 								"{{http}}{{home}}"
 							],
-							"port": "{{harrysLocalPort}}",
+							"port": "{{port}}",
 							"path": [
 								"{{api}}",
 								"{{user}}",
@@ -214,7 +214,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"hwells@go.com\",\n    \"password\": \"123465789\"\n}",
+							"raw": "{\n    \"email\": \"someone@go.com\",\n    \"password\": \"123465789\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -222,11 +222,11 @@
 							}
 						},
 						"url": {
-							"raw": "{{http}}{{home}}:{{harrysLocalPort}}/{{api}}/{{tokenPath}}",
+							"raw": "{{http}}{{home}}:{{port}}/{{api}}/{{tokenPath}}",
 							"host": [
 								"{{http}}{{home}}"
 							],
-							"port": "{{harrysLocalPort}}",
+							"port": "{{port}}",
 							"path": [
 								"{{api}}",
 								"{{tokenPath}}"
@@ -253,11 +253,11 @@
 							}
 						},
 						"url": {
-							"raw": "{{http}}{{home}}:{{harrysLocalPort}}/{{api}}/{{secured}}/{{ping}}",
+							"raw": "{{http}}{{home}}:{{port}}/{{api}}/{{secured}}/{{ping}}",
 							"host": [
 								"{{http}}{{home}}"
 							],
-							"port": "{{harrysLocalPort}}",
+							"port": "{{port}}",
 							"path": [
 								"{{api}}",
 								"{{secured}}",
