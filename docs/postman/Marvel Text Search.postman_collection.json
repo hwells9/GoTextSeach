@@ -15,11 +15,11 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{http}}{{home}}:{{harrysLocalPort}}/{{comic-books}}",
+							"raw": "{{http}}{{home}}:{{port}}/{{comic-books}}",
 							"host": [
 								"{{http}}{{home}}"
 							],
-							"port": "{{harrysLocalPort}}",
+							"port": "{{port}}",
 							"path": [
 								"{{comic-books}}"
 							]
