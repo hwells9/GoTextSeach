@@ -1,0 +1,308 @@
+{
+	"info": {
+		"_postman_id": "c92195d3-09d0-4d52-a447-3a41ca499d85",
+		"name": "Marvel Text Search",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "14902923"
+	},
+	"item": [
+		{
+			"name": "Comic Books",
+			"item": [
+				{
+					"name": "All Comic Books",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{http}}{{home}}:{{port}}/{{comic-books}}",
+							"host": [
+								"{{http}}{{home}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"{{comic-books}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Comic Book By Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{http}}{{home}}:{{port}}/{{comic-books}}/{{comicBookId}}",
+							"host": [
+								"{{http}}{{home}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"{{comic-books}}",
+								"{{comicBookId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Series",
+			"item": [
+				{
+					"name": "All Series",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{http}}{{home}}:{{port}}/{{series}}",
+							"host": [
+								"{{http}}{{home}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"{{series}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Series By Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{http}}{{home}}:{{port}}/{{series}}/{{seriesId}}",
+							"host": [
+								"{{http}}{{home}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"{{series}}",
+								"{{seriesId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Characters",
+			"item": [
+				{
+					"name": "All Characters",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{http}}{{home}}:{{port}}/{{characters}}",
+							"host": [
+								"{{http}}{{home}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"{{characters}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Character By Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{http}}{{home}}:{{port}}/{{characters}}/{{characterId}}",
+							"host": [
+								"{{http}}{{home}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"{{characters}}",
+								"{{characterId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Search",
+			"item": [
+				{
+					"name": "Search",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"searchTable\": \"comic_books\",\n    \"resultsColumns\": [\n        \"title\",\n        \"description\"\n    ],\n    \"searchTerm\": \"witch\",\n    \"searchColumn\": \"title\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{http}}{{home}}:{{port}}/{{search}}",
+							"host": [
+								"{{http}}{{home}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"{{search}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Some One\",\n    \"username\": \"someone\",\n    \"email\": \"someone@go.com\",\n    \"password\": \"123465789\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{http}}{{home}}:{{port}}/{{api}}/{{user}}/{{register}}",
+							"host": [
+								"{{http}}{{home}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"{{api}}",
+								"{{user}}",
+								"{{register}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Request Token",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"someone@go.com\",\n    \"password\": \"123465789\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{http}}{{home}}:{{port}}/{{api}}/{{tokenPath}}",
+							"host": [
+								"{{http}}{{home}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"{{api}}",
+								"{{tokenPath}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "test secured",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{http}}{{home}}:{{port}}/{{api}}/{{secured}}/{{ping}}",
+							"host": [
+								"{{http}}{{home}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"{{api}}",
+								"{{secured}}",
+								"{{ping}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "apikey",
+		"apikey": [
+			{
+				"key": "key",
+				"value": "authorization",
+				"type": "string"
+			},
+			{
+				"key": "value",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
