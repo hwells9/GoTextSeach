@@ -4,15 +4,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// Represents the User table for Authentication
-type User struct {
-	gorm.Model
-	Name     string `json:"name"`
-	Username string `json:"username" gorm:"unique"`
-	Email    string `json:"email" gorm:"unique"`
-	Password string `json:"password"`
-}
-
 // Represents the Series models
 type Series struct {
 	Id          int    `json:"id" gorm:"primary_key"`

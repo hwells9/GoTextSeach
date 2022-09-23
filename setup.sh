@@ -1,7 +1,13 @@
 #!/bin/bash
 
-docker-compose up -d
+# Create container and the database
+docker compose up -d
 
-go run main.go -executeBuildmodels true
+# let database intialize
+sleep 5
 
+# Builds all the tables in the database
+go run main.go -executeBuildTables true
+
+# Migrates data from the marvel api into our database
 go run main.go -executeDataMigration true

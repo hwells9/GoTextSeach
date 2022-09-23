@@ -1,6 +1,7 @@
 package database
 
 import (
+	"bench/textsearch/authentication"
 	"bench/textsearch/tables"
 	"fmt"
 	"log"
@@ -9,7 +10,6 @@ import (
 	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 var Db *gorm.DB
@@ -49,7 +49,7 @@ func Connect() {
 		host, port, user, password, dbName)
 
 	Db, dbError = gorm.Open(postgres.Open(postgresConnectionString), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		// Logger: logger.Default.LogMode(logger.Info),
 	})
 	if dbError != nil {
 		log.Fatal(dbError)
@@ -58,7 +58,7 @@ func Connect() {
 	log.Println("Connected to Database!")
 }
 func CreateTables() {
-	Db.AutoMigrate(&tables.User{})
+	Db.AutoMigrate(&authentication.User{})
 	Db.AutoMigrate(&tables.Series{})
 	Db.AutoMigrate(&tables.ComicBook{})
 	Db.AutoMigrate(&tables.Character{})
