@@ -1,18 +1,78 @@
 package main
 
 import (
+	"bench/textsearch/database"
+	"bench/textsearch/tables"
 	"bench/textsearch/utils"
-	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/spf13/viper"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
+	"golang.org/x/crypto/bcrypt"
 )
+
+var port int = 10000
+
+// User used for authentication
+type User struct {
+	Name     string `db:"name"`
+	Username string `db:"username"`
+	Email    string `db:"email"`
+	Password string `db:"password"`
+}
+
+// The request body for search requests
+type SearchBody struct {
+	SearchTable    string   `json:"searchTable"`
+	ResultsColumns []string `json:"resultsColumns"`
+	SearchTerm     string   `json:"searchTerm"`
+	SearchColumn   string   `json:"searchColumn"`
+}
+
+// Helper function to encrypt passwords
+func (user *User) HashPassword(password string) error {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	if err != nil {
+		return err
+	}
+	user.Password = string(bytes)
+	return nil
+}
+
+// Helper function to check if password is correct
+func (user *User) CheckPassword(providedPassword string) error {
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(providedPassword))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Register user in the database
+func RegisterUser(context *gin.Context) {
+	var user User
+	if err := context.ShouldBindJSON(&user); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		context.Abort()
+		return
+	}
+	if err := user.HashPassword(user.Password); err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		context.Abort()
+		return
+	}
+	record := database.Db.Create(&user)
+	if record.Error != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": record.Error.Error()})
+		context.Abort()
+		return
+	}
+	// context.JSON(http.StatusCreated, gin.H{"userId": user.ID, "email": user.Email, "username": user.Username})
+}
 
 type ComicBook struct {
 	Title string
@@ -27,189 +87,128 @@ type SearchQuery struct {
 	SearchColumn   string
 }
 
-func homePage(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Welcome to the HomePage!")
+func homePage(context *gin.Context) {
+	fmt.Println("Welcome to the HomePage!")
 	fmt.Println("Endpoint Hit: homePage")
 }
 
-func returnAllSeries(w http.ResponseWriter, r *http.Request) {
+func returnAllSeries(context *gin.Context) {
 	fmt.Println("Retrieving all Series")
 
-	query := "select * from series s"
+	var series []tables.Series
 
-	results := []utils.SeriesDbEntry{}
+	res := database.Db.Find(&series)
 
-	err := utils.Db.Select(&results, query)
-
-	if err != nil {
-		fmt.Printf("Error: %s", err)
+	if res.Error != nil {
+		fmt.Printf("Error: %s", res.Error)
 	}
 
-	json.NewEncoder(w).Encode(results)
+	context.JSON(http.StatusOK, gin.H{"data": series})
 }
 
-func returnComicBooks(w http.ResponseWriter, r *http.Request) {
+func returnComicBooks(context *gin.Context) {
 	fmt.Println("Retrieving all Comic Books")
 
-	query := "select * from comic_books cb"
+	var comicBooks []tables.ComicBook
 
-	results := []utils.ComicBookDbEntry{}
+	res := database.Db.Find(&comicBooks)
 
-	err := utils.Db.Select(&results, query)
-
-	if err != nil {
-		fmt.Printf("Error: %s", err)
+	if res.Error != nil {
+		fmt.Printf("Error: %s", res.Error)
 	}
 
-	json.NewEncoder(w).Encode(results)
+	context.JSON(http.StatusOK, gin.H{"data": comicBooks})
 }
 
-func returnCharacters(w http.ResponseWriter, r *http.Request) {
+func returnCharacters(context *gin.Context) {
 	fmt.Println("Retrieving all Characters")
 
-	query := "select * from characters c"
+	var characters_results []tables.Character
 
-	results := []utils.CharacterDbEntry{}
+	res := database.Db.Find(&characters_results)
 
-	err := utils.Db.Select(&results, query)
-
-	if err != nil {
-		fmt.Printf("Error: %s", err)
+	if res.Error != nil {
+		fmt.Printf("Error: %s", res.Error)
 	}
 
-	json.NewEncoder(w).Encode(results)
+	context.JSON(http.StatusOK, gin.H{"data": characters_results})
 }
 
-func returnSeries(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	key, _ := strconv.Atoi(vars["id"])
+func returnSeries(context *gin.Context) {
+	string_id := context.Param("id")
+	id, _ := strconv.Atoi(string_id)
 
-	fmt.Printf("Retrieving Series with id: %d", key)
+	fmt.Printf("Retrieving Series with id: %d", id)
 
-	query := fmt.Sprintf("select * from series s where s.id=%d", key)
+	var series []tables.Series
 
-	result := []utils.SeriesDbEntry{}
+	res := database.Db.First(&series, id)
 
-	err := utils.Db.Select(&result, query)
-
-	if err != nil {
-		fmt.Printf("Error: %s", err)
+	if res.Error != nil {
+		fmt.Printf("Error: %s", res.Error)
 	}
 
-	json.NewEncoder(w).Encode(result)
+	context.JSON(http.StatusOK, gin.H{"data": series})
 }
 
-func returnComicBook(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	key, _ := strconv.Atoi(vars["id"])
+func returnComicBook(context *gin.Context) {
+	string_id := context.Param("id")
+	id, _ := strconv.Atoi(string_id)
 
-	fmt.Printf("Retrieving Comic Book with id: %d", key)
+	fmt.Printf("Retrieving Comic Book with id: %d", id)
 
-	cbQuery := fmt.Sprintf("select * from comic_books cb where cb.id=%d", key)
+	var comicBook tables.ComicBook
 
-	result := []utils.ComicBookDbEntry{}
+	res := database.Db.First(&comicBook, id)
 
-	err := utils.Db.Select(&result, cbQuery)
-
-	if err != nil {
-		fmt.Printf("Error: %s", err)
+	if res.Error != nil {
+		fmt.Printf("Error: %s", res.Error)
 	}
 
-	json.NewEncoder(w).Encode(result)
+	context.JSON(http.StatusOK, gin.H{"data": comicBook})
 }
 
-func returnCharacter(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	key, _ := strconv.Atoi(vars["id"])
+func returnCharacter(context *gin.Context) {
+	string_id := context.Param("id")
+	id, _ := strconv.Atoi(string_id)
 
-	fmt.Printf("Retrieving Character with id: %d", key)
+	fmt.Printf("Retrieving Character with id: %d", id)
 
-	cbQuery := fmt.Sprintf("select * from characters c where c.id=%d", key)
+	var character tables.Character
 
-	result := []utils.CharacterDbEntry{}
+	res := database.Db.First(&character, id)
 
-	err := utils.Db.Select(&result, cbQuery)
-
-	if err != nil {
-		fmt.Printf("Error: %s", err)
+	if res.Error != nil {
+		fmt.Printf("Error: %s", res.Error)
 	}
 
-	json.NewEncoder(w).Encode(result)
+	context.JSON(http.StatusOK, gin.H{"data": character})
 }
 
-func searchSeries(w http.ResponseWriter, r *http.Request) {
-	reqBody, _ := ioutil.ReadAll(r.Body)
+func searchDatabase(context *gin.Context) {
+	var searchBody SearchBody
+	var results []map[string]interface{}
 
-	var searchQuery SearchQuery
-
-	json.Unmarshal(reqBody, &searchQuery)
-
-	resultColumns := strings.Join(searchQuery.ResultsColumns, ",")
-	searchTerm := searchQuery.SearchTerm
-	searchColumn := searchQuery.SearchColumn
-
-	fmt.Printf("Retrieving Series with tableNames: %s, %s, %s",
-		resultColumns, searchTerm, searchColumn)
-
-	query := "SELECT $1 FROM series WHERE to_tsvector('english', $2) @@ to_tsquery('english', $3)"
-
-	result, err := utils.Db.Query(query, resultColumns, searchColumn, searchTerm)
-
-	if err != nil {
-		fmt.Printf("Error: %s", err)
+	if err := context.BindJSON(&searchBody); err != nil {
+		fmt.Printf("There was an issue getting the Series Search Body: %s", err)
+		return
 	}
 
-	json.NewEncoder(w).Encode(result)
-}
+	resultColumns := strings.Join(searchBody.ResultsColumns, ",")
 
-func searchComicBooks(w http.ResponseWriter, r *http.Request) {
-	reqBody, _ := ioutil.ReadAll(r.Body)
+	fmt.Printf("Retrieving %s columns: %s with term: %s in column: %s\n",
+		searchBody.SearchTable, resultColumns, searchBody.SearchTerm, searchBody.SearchColumn)
 
-	var searchQuery SearchQuery
+	query := fmt.Sprintf("SELECT %s FROM %s WHERE to_tsvector('english', %s) @@ to_tsquery('english', ?)", resultColumns, searchBody.SearchTable, searchBody.SearchColumn)
 
-	json.Unmarshal(reqBody, &searchQuery)
+	res := database.Db.Raw(query, searchBody.SearchTerm).Scan(&results)
 
-	resultColumns := strings.Join(searchQuery.ResultsColumns, ",")
-	searchTerm := searchQuery.SearchTerm
-	searchColumn := searchQuery.SearchColumn
-
-	fmt.Printf("Retrieving Comicbooks with : %s, %s, %s",
-		resultColumns, searchTerm, searchColumn)
-
-	query := "SELECT $1 FROM comic_books WHERE to_tsvector('english', $2) @@ to_tsquery('english', $3)"
-
-	result, err := utils.Db.Query(query, resultColumns, searchColumn, searchTerm)
-
-	if err != nil {
-		fmt.Printf("Error: %s", err)
+	if res.Error != nil {
+		fmt.Printf("Error: %s", res.Error)
 	}
 
-	json.NewEncoder(w).Encode(result)
-}
+	context.JSON(http.StatusOK, gin.H{"data": results})
 
-func searchCharacters(w http.ResponseWriter, r *http.Request) {
-	reqBody, _ := ioutil.ReadAll(r.Body)
-
-	var searchQuery SearchQuery
-
-	json.Unmarshal(reqBody, &searchQuery)
-
-	resultColumns := strings.Join(searchQuery.ResultsColumns, ",")
-	searchTerm := searchQuery.SearchTerm
-	searchColumn := searchQuery.SearchColumn
-
-	fmt.Printf("Retrieving Character with tableNames: %s, %s, %s",
-		resultColumns, searchTerm, searchColumn)
-
-	query := "SELECT $1 FROM characters WHERE to_tsvector('english', $2) @@ to_tsquery('english', $3)"
-
-	result, err := utils.Db.Query(query, resultColumns, searchColumn, searchTerm)
-
-	if err != nil {
-		fmt.Printf("Error: %s", err)
-	}
-
-	json.NewEncoder(w).Encode(result)
 }
 
 // func getLargestComicBookId() int {
@@ -226,7 +225,7 @@ func searchCharacters(w http.ResponseWriter, r *http.Request) {
 
 // }
 
-// func createComicBook(w http.ResponseWriter, r *http.Request) {
+// func createComicBook(context *gin.Context) {
 // 	reqBody, _ := ioutil.ReadAll(r.Body)
 
 // 	var comicBook ComicBook
@@ -241,10 +240,10 @@ func searchCharacters(w http.ResponseWriter, r *http.Request) {
 
 // 	ComicBooks = append(ComicBooks, comicBook)
 
-// 	json.NewEncoder(w).Encode(comicBook)
+// 	json.NewEncoder(context.Writer).Encode(comicBook)
 // }
 
-// func deleteComicBook(w http.ResponseWriter, r *http.Request) {
+// func deleteComicBook(context *gin.Context) {
 // 	vars := mux.Vars(r)
 // 	key, _ := strconv.Atoi(vars["id"])
 
@@ -257,7 +256,7 @@ func searchCharacters(w http.ResponseWriter, r *http.Request) {
 // 	}
 // }
 
-// func updateComicBook(w http.ResponseWriter, r *http.Request) {
+// func updateComicBook(context *gin.Context) {
 // 	vars := mux.Vars(r)
 // 	key, _ := strconv.Atoi(vars["id"])
 
@@ -272,54 +271,61 @@ func searchCharacters(w http.ResponseWriter, r *http.Request) {
 // 	}
 // }
 
-func handleRequests() {
-	// Create router
-	myRouter := mux.NewRouter().StrictSlash(true)
+func initRouter() *gin.Engine {
+	router := gin.Default()
+	series := router.Group("/series")
+	{
+		series.GET("/", returnAllSeries)
+		series.GET("/:id", returnSeries)
+	}
+	comicBooks := router.Group("/comic-books")
+	{
+		comicBooks.GET("/", returnComicBooks)
+		comicBooks.GET("/:id", returnComicBook)
+	}
+	characters := router.Group("/characters")
+	{
+		characters.GET("/", returnCharacters)
+		characters.GET("/:id", returnCharacter)
+	}
+	search := router.Group("/search")
+	{
+		search.POST("/", searchDatabase)
+	}
 
-	// Routes
-	myRouter.HandleFunc("/", homePage)
-	// Series endpoints
-	myRouter.HandleFunc("/series", returnAllSeries).Methods("GET")
-	myRouter.HandleFunc("/series/{id}", returnSeries).Methods("GET")
-
-	// Comic Book endpoints
-	myRouter.HandleFunc("/comic-books", returnComicBooks).Methods("GET")
-	myRouter.HandleFunc("/comic-books/{id}", returnComicBook).Methods("GET")
-
-	// Characters endpoints
-	myRouter.HandleFunc("/characters", returnCharacters).Methods("GET")
-	myRouter.HandleFunc("/characters/{id}", returnCharacter).Methods("GET")
-
-	// search endpoints
-	myRouter.HandleFunc("/searchSeries", searchSeries).Methods("GET")
-	myRouter.HandleFunc("/searchComicBooks", searchComicBooks).Methods("GET")
-	myRouter.HandleFunc("/searchCharacters", searchCharacters).Methods("GET")
-
-	// myRouter.HandleFunc("/comic-books", createComicBook).Methods("POST")
-	// myRouter.HandleFunc("/comic-books/{id}", deleteComicBook).Methods("DELETE")
-	// myRouter.HandleFunc("/comic-books/{id}", updateComicBook).Methods("PUT")
-
-	// Handle fatal errors
-	log.Fatal(http.ListenAndServe(":10000", myRouter))
+	// api := router.Group("/api")
+	// {
+	// 	api.POST("/token", controllers.GenerateToken)
+	// 	api.POST("/user/register", controllers.RegisterUser)
+	// 	secured := api.Group("/secured").Use(middlewares.Auth())
+	// 	{
+	// 		secured.GET("/ping", controllers.Ping)
+	// 	}
+	// }
+	return router
 }
 
 func main() {
 	// get the executeDataMigration parameter from the cmd line
 	executeDataMigrationPtr := flag.Bool("executeDataMigration", false, "bool value")
+	executeBuildTables := flag.Bool("executeBuildTables", false, "bool value")
 	flag.Parse()
+	viper.SetConfigFile("env-vars.env")
+
+	if *executeBuildTables {
+		database.Connect()
+		database.CreateTables()
+	}
 
 	if *executeDataMigrationPtr {
-		// run the export data from marvel api to db
+		database.Connect()
 		utils.ExecuteMigration()
-	} else {
-		// ComicBooks = []ComicBook{
-		// 	{Title: "X-Men", Year: 1970, Id: 1},
-		// 	{Title: "Avengers", Year: 1856, Id: 2},
-		// }
-		// Set the location of the environment variables file
-		viper.SetConfigFile("env-vars.env")
-		utils.DbConnect()
-		handleRequests()
+	}
+
+	if !*executeDataMigrationPtr && !*executeBuildTables {
+		database.Connect()
+		router := initRouter()
+		router.Run(fmt.Sprintf(":%d", port))
 	}
 
 }
