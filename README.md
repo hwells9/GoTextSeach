@@ -53,3 +53,8 @@ Envrionment Variables
 - They will automatically be pulled in where needed
 - Import "github.com/spf13/viper" to access env vars
 
+Linting
+-------
+- We are using `golangci-lint run` for linting
+- To install `brew install golangci-lint`
+

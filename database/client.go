@@ -58,11 +58,41 @@ func Connect() {
 	log.Println("Connected to Database!")
 }
 func CreateTables() {
-	Db.AutoMigrate(&authentication.User{})
-	Db.AutoMigrate(&tables.Series{})
-	Db.AutoMigrate(&tables.ComicBook{})
-	Db.AutoMigrate(&tables.Character{})
-	Db.AutoMigrate(&tables.CharacterSeries{})
-	Db.AutoMigrate(&tables.CharacterComicBook{})
+	err := Db.AutoMigrate(&authentication.User{})
+	{
+		if err != nil {
+			log.Panicf("Error creating User table with error: %s", err)
+		}
+	}
+	err1 := Db.AutoMigrate(&tables.Series{})
+	{
+		if err1 != nil {
+			log.Panicf("Error creating Series table with error: %s", err1)
+		}
+	}
+	err2 := Db.AutoMigrate(&tables.ComicBook{})
+	{
+		if err2 != nil {
+			log.Panicf("Error creating ComicBook table with error: %s", err2)
+		}
+	}
+	err3 := Db.AutoMigrate(&tables.Character{})
+	{
+		if err3 != nil {
+			log.Panicf("Error creating Character table with error: %s", err3)
+		}
+	}
+	err4 := Db.AutoMigrate(&tables.CharacterSeries{})
+	{
+		if err4 != nil {
+			log.Panicf("Error creating CharacterSeries table with error: %s", err4)
+		}
+	}
+	err5 := Db.AutoMigrate(&tables.CharacterComicBook{})
+	{
+		if err5 != nil {
+			log.Panicf("Error creating CharacterComicBook table with error: %s", err5)
+		}
+	}
 	log.Println("tables have been created!")
 }

@@ -7,11 +7,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"strconv"
 	"time"
 
 	// _ tells go that we want to import so we can use the drivers without ever referencing the library directly in code
-	"io/ioutil"
+
 	"log"
 	"net/http"
 	"os"
@@ -172,7 +173,7 @@ func getSeriesResponse(hash string, nowString string) SeriesResponse {
 
 	var response SeriesResponse
 
-	responseBody, _ := ioutil.ReadAll(res.Body)
+	responseBody, _ := io.ReadAll(res.Body)
 
 	if err = json.Unmarshal(responseBody, &response); err != nil {
 		log.Fatal(err)
@@ -197,7 +198,7 @@ func getSeriesComicsResponses(seriesResponse SeriesResponse, hash string, now st
 
 		var response SeriesComicsResponse
 
-		responseBody, _ := ioutil.ReadAll(res.Body)
+		responseBody, _ := io.ReadAll(res.Body)
 
 		if err = json.Unmarshal(responseBody, &response); err != nil {
 			log.Fatal(err)
@@ -233,7 +234,7 @@ func getSeriesCharactersResponses(seriesComicsResponses []SeriesComicsResponse, 
 
 			var charResponse SeriesCharactersResponse
 
-			responseBody, _ := ioutil.ReadAll(res.Body)
+			responseBody, _ := io.ReadAll(res.Body)
 
 			if err = json.Unmarshal(responseBody, &charResponse); err != nil {
 				log.Fatal(err)
@@ -317,7 +318,7 @@ func populateDistinctCharactersDbEntries(seriesCharactersResponses []SeriesChara
 					break
 				}
 			}
-			if dcIdPresent == false {
+			if !dcIdPresent {
 				// Add to the struct
 				distinctCharacters = append(distinctCharacters, c)
 			}

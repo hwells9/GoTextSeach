@@ -7,6 +7,7 @@ import (
 	"bench/textsearch/utils"
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -35,7 +36,12 @@ func main() {
 	if !*executeDataMigrationPtr && !*executeBuildTables {
 		database.Connect()
 		router := initRouter()
-		router.Run(fmt.Sprintf(":%d", port))
+		err := router.Run(fmt.Sprintf(":%d", port))
+		{
+			if err != nil {
+				log.Panicf("There was an issue starting the api error: %s", err)
+			}
+		}
 	}
 
 }
